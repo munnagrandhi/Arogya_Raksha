@@ -1,0 +1,44 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isValidRole(role) {
+      return role in ['GENERAL_PUBLIC', 'PRIVATE_DOCTOR', 'GOVERNMENT_DOCTOR', 'GOVERNMENT_OFFICIAL'];
+    }
+
+    function isValidUserProfile(data) {
+      return data.keys().hasAll(['userId', 'role', 'displayName']) &&
+             data.userId is string &&
+             data.displayName is string &&
+             data.displayName.size() > 0 &&
+             isValidRole(data.role);
+    }
+
+    match /users/{userId} {
+      // Authenticated users can read doctor profiles or their own profile
+      allow read: if isAuthenticated() && (
+        isOwner(userId) ||
+        resource.data.role in ['PRIVATE_DOCTOR', 'GOVERNMENT_DOCTOR', 'GOVERNMENT_OFFICIAL']
+      );
+
+      // Users can create/update their own profile
+      allow create: if isOwner(userId) &&
+        request.resource.data.userId == userId &&
+        isValidUserProfile(request.resource.data);
+
+      allow update: if isOwner(userId) &&
+        request.resource.data.userId == userId &&
+        isValidUserProfile(request.resource.data);
+
+      allow delete: if isOwner(userId);
+    }
+  }
+}

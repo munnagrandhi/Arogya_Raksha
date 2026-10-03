@@ -1,0 +1,44 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile with role differentiation (general public, private doctor, government doctor, government official)",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Unique auth UID of the user" },
+        "displayName": { "type": "string", "description": "Full name of the user or doctor" },
+        "email": { "type": "string", "description": "User email address" },
+        "role": {
+          "type": "string",
+          "enum": ["GENERAL_PUBLIC", "PRIVATE_DOCTOR", "GOVERNMENT_DOCTOR", "GOVERNMENT_OFFICIAL"],
+          "description": "Selected role: General Public, Private Doctor, Government Doctor, Government Official"
+        },
+        "phone": { "type": "string", "description": "Contact phone number" },
+        "bloodGroup": { "type": "string", "description": "Emergency blood group for general public" },
+        "emergencyContact": { "type": "string", "description": "Emergency kin phone number" },
+        "nmcRegNumber": { "type": "string", "description": "National Medical Commission / State Council Registration No." },
+        "qualifications": { "type": "string", "description": "Medical degrees (MBBS, MD, MS, DM, MCh, DNB)" },
+        "specialty": { "type": "string", "description": "Primary medical specialty" },
+        "hospitalName": { "type": "string", "description": "Hospital name where doctor is posted" },
+        "hospitalTimings": { "type": "string", "description": "Hospital daytime OPD duty hours" },
+        "hasPrivateClinic": { "type": "boolean", "description": "Whether doctor runs a private clinic" },
+        "clinicName": { "type": "string", "description": "Private clinic name" },
+        "clinicAddress": { "type": "string", "description": "Private clinic location" },
+        "clinicTimings": { "type": "string", "description": "Private clinic evening hours" },
+        "clinicConsultFee": { "type": "integer", "description": "Consultation fee in Indian Rupees" },
+        "clinicPhone": { "type": "string", "description": "Clinic telephone number" },
+        "govtDepartment": { "type": "string", "description": "Official government department (CMO / Traffic Police)" },
+        "govtBadgeId": { "type": "string", "description": "Official government employee or badge ID" },
+        "createdAt": { "type": "integer", "description": "Creation timestamp epoch milliseconds" },
+        "updatedAt": { "type": "integer", "description": "Update timestamp epoch milliseconds" }
+      },
+      "required": ["userId", "role", "displayName"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Stores user registration and role information for general public, private doctors, govt doctors, and govt officials"
+    }
+  }
+}

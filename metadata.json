@@ -1,0 +1,6 @@
+{
+  "name": "Aarogya Raksha",
+  "description": "Indian emergency health triage, nearest hospital navigation, dual-practice doctor directory (Govt & Private), and traffic green corridor sync.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

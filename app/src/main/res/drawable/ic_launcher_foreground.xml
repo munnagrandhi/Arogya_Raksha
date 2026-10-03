@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Outer Shield / Circle Glow -->
+    <path
+        android:fillColor="#1E3A8A"
+        android:pathData="M54,23 C36.9,23 23,36.9 23,54 C23,71.1 36.9,85 54,85 C71.1,85 85,71.1 85,54 C85,36.9 71.1,23 54,23 Z" />
+
+    <!-- Bold Medical Cross in Pure White & Emergency Red -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M50,32 L58,32 C59.1,32 60,32.9 60,34 L60,48 L74,48 C75.1,48 76,48.9 76,50 L76,58 C76,59.1 75.1,60 74,60 L60,60 L60,74 C60,75.1 59.1,76 58,76 L50,76 C48.9,76 48,75.1 48,74 L48,60 L34,60 C32.9,60 32,59.1 32,58 L32,50 C32,48.9 32.9,48 34,48 L48,48 L48,34 C48,32.9 48.9,32 50,32 Z" />
+
+    <!-- Emergency Heartbeat Pulse line across center -->
+    <path
+        android:strokeColor="#DC2626"
+        android:strokeWidth="3.2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:fillColor="#00000000"
+        android:pathData="M35,54 L44,54 L48,44 L53,64 L57,48 L61,56 L64,54 L73,54" />
+
+    <!-- Central Indian tricolor emergency dot -->
+    <path
+        android:fillColor="#EA580C"
+        android:pathData="M54,36 C55.1,36 56,36.9 56,38 C56,39.1 55.1,40 54,40 C52.9,40 52,39.1 52,38 C52,36.9 52.9,36 54,36 Z" />
+</vector>

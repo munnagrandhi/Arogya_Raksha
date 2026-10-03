@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">Aarogya Raksha</string>
+    <string name="emergency_triage_title">Critical Emergency Triage</string>
+    <string name="emergency_tagline">National Emergency Response &amp; Doctor Locator</string>
+    <string name="dial_108">Dial 108 (Ambulance)</string>
+    <string name="dial_112">Dial 112 (National Emergency)</string>
+    <string name="dial_102">Dial 102 (Janani Shishu)</string>
+    <string name="dial_104">Dial 104 (Health Helpline)</string>
+    <string name="role_citizen">General Public</string>
+    <string name="role_doctor">Doctor Portal</string>
+    <string name="role_govt">Govt Health / Traffic Officer</string>
+</resources>
