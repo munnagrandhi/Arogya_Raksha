@@ -77,8 +77,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.model.AppRole
+import com.example.data.model.ClinicAffiliationData
+import com.example.data.model.CompleteDoctorProfile
+import com.example.data.model.DoctorCredentialsData
 import com.example.data.model.DoctorEntity
+import com.example.data.model.DoctorSpecializationData
+import com.example.data.model.HospitalAffiliationData
 import com.example.data.model.UserEntity
+import com.example.ui.components.DoctorCredentialsInputForm
 import com.example.ui.components.dialNumber
 import com.example.ui.theme.EmergencyAmber
 import com.example.ui.theme.EmergencyGreen
@@ -91,6 +97,7 @@ import com.example.ui.theme.TirangaSaffron
 fun LoginScreen(
     doctors: List<DoctorEntity>,
     onRegisterUserWithRole: (UserEntity) -> Unit,
+    onRegisterDoctorProfile: (CompleteDoctorProfile) -> Unit,
     onCitizenQuickLogin: (name: String, phone: String, bloodGroup: String) -> Unit,
     onDoctorQuickLogin: (doctorId: Long, doctorName: String, badge: String) -> Unit,
     onGovtQuickLogin: (department: String, officerId: String) -> Unit,
@@ -342,300 +349,212 @@ fun LoginScreen(
                         HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
 
                         // ROLE-SPECIFIC FORM FIELDS
-                        Text(
-                            text = "Registration Details for ${selectedAppRole.title}:",
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-
-                        // Common Basic Fields
-                        OutlinedTextField(
-                            value = regName,
-                            onValueChange = { regName = it },
-                            label = { Text(if (selectedAppRole == AppRole.PRIVATE_DOCTOR || selectedAppRole == AppRole.GOVERNMENT_DOCTOR) "Doctor Full Name (e.g. Dr. Rajesh Verma)" else "Full Name") },
-                            leadingIcon = { Icon(Icons.Default.Person, contentDescription = "Name") },
-                            modifier = Modifier.fillMaxWidth().testTag("reg_input_name"),
-                            singleLine = true
-                        )
-
-                        OutlinedTextField(
-                            value = regEmail,
-                            onValueChange = { regEmail = it },
-                            label = { Text("Email Address") },
-                            modifier = Modifier.fillMaxWidth().testTag("reg_input_email"),
-                            singleLine = true
-                        )
-
-                        OutlinedTextField(
-                            value = regPhone,
-                            onValueChange = { regPhone = it },
-                            label = { Text("Mobile Contact (+91)") },
-                            leadingIcon = { Icon(Icons.Default.Phone, contentDescription = "Phone") },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                            modifier = Modifier.fillMaxWidth().testTag("reg_input_phone"),
-                            singleLine = true
-                        )
-
-                        // 1. GENERAL PUBLIC FIELDS
-                        if (selectedAppRole == AppRole.GENERAL_PUBLIC) {
-                            ExposedDropdownMenuBox(
-                                expanded = expandedBloodDropdown,
-                                onExpandedChange = { expandedBloodDropdown = !expandedBloodDropdown },
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                OutlinedTextField(
-                                    value = "Blood Group: $regBloodGroup",
-                                    onValueChange = {},
-                                    readOnly = true,
-                                    label = { Text("Emergency Blood Group") },
-                                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedBloodDropdown) },
-                                    modifier = Modifier.fillMaxWidth().menuAnchor().testTag("reg_input_blood_group")
-                                )
-                                ExposedDropdownMenu(
-                                    expanded = expandedBloodDropdown,
-                                    onDismissRequest = { expandedBloodDropdown = false }
-                                ) {
-                                    bloodGroups.forEach { bg ->
-                                        DropdownMenuItem(
-                                            text = { Text(bg) },
-                                            onClick = {
-                                                regBloodGroup = bg
-                                                expandedBloodDropdown = false
-                                            }
-                                        )
-                                    }
-                                }
-                            }
-
-                            OutlinedTextField(
-                                value = regEmergencyContact,
-                                onValueChange = { regEmergencyContact = it },
-                                label = { Text("Emergency Kin / Contact Phone") },
-                                leadingIcon = { Icon(Icons.Default.Call, contentDescription = "Emergency Kin") },
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                                modifier = Modifier.fillMaxWidth().testTag("reg_input_emergency_contact"),
-                                singleLine = true
-                            )
-                        }
-
-                        // 2. DOCTOR FIELDS (GOVT DOCTOR & PRIVATE DOCTOR)
                         if (selectedAppRole == AppRole.PRIVATE_DOCTOR || selectedAppRole == AppRole.GOVERNMENT_DOCTOR) {
-                            OutlinedTextField(
-                                value = regNmcNumber,
-                                onValueChange = { regNmcNumber = it },
-                                label = { Text("NMC / State Medical Council Reg No. (e.g. NMC-2015-8491)") },
-                                leadingIcon = { Icon(Icons.Default.Verified, contentDescription = "NMC Reg") },
-                                modifier = Modifier.fillMaxWidth().testTag("reg_input_nmc"),
-                                singleLine = true
+                            DoctorCredentialsInputForm(
+                                initialProfile = CompleteDoctorProfile(
+                                    userId = "doc_${System.currentTimeMillis()}",
+                                    fullName = regName,
+                                    email = regEmail,
+                                    phone = regPhone,
+                                    role = selectedAppRole.code,
+                                    credentials = DoctorCredentialsData(
+                                        medicalCouncil = "National Medical Commission (NMC)",
+                                        registrationNumber = regNmcNumber,
+                                        registrationYear = 2016,
+                                        primaryDegree = "MBBS",
+                                        postGraduateDegrees = "MD (General Medicine)",
+                                        additionalCertifications = "",
+                                        yearsOfExperience = 8
+                                    ),
+                                    hospitalAffiliation = HospitalAffiliationData(
+                                        hospitalName = regHospitalName,
+                                        hospitalType = if (selectedAppRole == AppRole.GOVERNMENT_DOCTOR) "Government Apex Hospital" else "Private Multispeciality Hospital",
+                                        designation = "Consultant Specialist",
+                                        department = "Emergency & Critical Care",
+                                        opdTimings = regHospitalTimings,
+                                        hospitalCity = "Delhi NCR",
+                                        emergencyDutyAvailable = true
+                                    ),
+                                    clinicAffiliation = ClinicAffiliationData(
+                                        runsPrivateClinic = regHasClinic,
+                                        clinicName = regClinicName,
+                                        clinicAddress = regClinicAddress,
+                                        clinicCity = "Delhi NCR",
+                                        eveningHours = regClinicTimings,
+                                        consultationFeeInr = regClinicFee.toIntOrNull() ?: 500,
+                                        clinicContactPhone = regClinicPhone,
+                                        appointmentBookingAvailable = true
+                                    ),
+                                    specialization = DoctorSpecializationData(
+                                        primarySpecialty = regSpecialty,
+                                        subSpecialties = "Emergency Care, Critical Care",
+                                        clinicalInterests = "Golden Hour Trauma & STEMI Management",
+                                        languagesSpoken = "Hindi, English"
+                                    )
+                                ),
+                                onSaveProfile = { completeProfile ->
+                                    onRegisterDoctorProfile(completeProfile)
+                                    Toast.makeText(context, "Registered successfully as ${completeProfile.fullName}!", Toast.LENGTH_SHORT).show()
+                                }
                             )
-
-                            OutlinedTextField(
-                                value = regQualifications,
-                                onValueChange = { regQualifications = it },
-                                label = { Text("Qualifications (MBBS, MD, MS, DM, MCh, DNB)") },
-                                modifier = Modifier.fillMaxWidth().testTag("reg_input_qualifications"),
-                                singleLine = true
-                            )
-
-                            OutlinedTextField(
-                                value = regSpecialty,
-                                onValueChange = { regSpecialty = it },
-                                label = { Text("Specialty (Cardiologist, Neurologist, Trauma, etc.)") },
-                                modifier = Modifier.fillMaxWidth().testTag("reg_input_specialty"),
-                                singleLine = true
-                            )
-
-                            // Hospital posting
+                        } else {
                             Text(
-                                text = if (selectedAppRole == AppRole.GOVERNMENT_DOCTOR) "🏥 Government Hospital Duty:" else "🏥 Associated Hospital / Medical Centre:",
-                                fontSize = 13.sp,
+                                text = "Registration Details for ${selectedAppRole.title}:",
+                                fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF0F3E6D)
+                                color = MaterialTheme.colorScheme.primary
                             )
 
+                            // Common Basic Fields
                             OutlinedTextField(
-                                value = regHospitalName,
-                                onValueChange = { regHospitalName = it },
-                                label = { Text("Hospital Name (e.g. AIIMS / District Civil Hospital)") },
-                                modifier = Modifier.fillMaxWidth().testTag("reg_input_hospital_name"),
+                                value = regName,
+                                onValueChange = { regName = it },
+                                label = { Text("Full Name") },
+                                leadingIcon = { Icon(Icons.Default.Person, contentDescription = "Name") },
+                                modifier = Modifier.fillMaxWidth().testTag("reg_input_name"),
                                 singleLine = true
                             )
 
                             OutlinedTextField(
-                                value = regHospitalTimings,
-                                onValueChange = { regHospitalTimings = it },
-                                label = { Text("Hospital Duty OPD Hours") },
-                                modifier = Modifier.fillMaxWidth().testTag("reg_input_hospital_timings"),
+                                value = regEmail,
+                                onValueChange = { regEmail = it },
+                                label = { Text("Email Address") },
+                                modifier = Modifier.fillMaxWidth().testTag("reg_input_email"),
                                 singleLine = true
                             )
 
-                            // Private Clinic Section (Even govt doctors can run evening clinics in accordance with state guidelines)
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(
-                                        text = "🩺 Private Evening Clinic Hours?",
-                                        fontSize = 13.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color(0xFF92400E)
-                                    )
-                                    Text(
-                                        text = "Showcase dual-practice convenience to patients",
-                                        fontSize = 11.sp,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-                                Switch(
-                                    checked = regHasClinic,
-                                    onCheckedChange = { regHasClinic = it },
-                                    modifier = Modifier.testTag("reg_switch_private_clinic")
-                                )
-                            }
+                            OutlinedTextField(
+                                value = regPhone,
+                                onValueChange = { regPhone = it },
+                                label = { Text("Mobile Contact (+91)") },
+                                leadingIcon = { Icon(Icons.Default.Phone, contentDescription = "Phone") },
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                                modifier = Modifier.fillMaxWidth().testTag("reg_input_phone"),
+                                singleLine = true
+                            )
 
-                            if (regHasClinic) {
-                                OutlinedTextField(
-                                    value = regClinicName,
-                                    onValueChange = { regClinicName = it },
-                                    label = { Text("Private Clinic Name") },
-                                    leadingIcon = { Icon(Icons.Default.Business, contentDescription = "Clinic") },
-                                    modifier = Modifier.fillMaxWidth().testTag("reg_input_clinic_name"),
-                                    singleLine = true
-                                )
-
-                                OutlinedTextField(
-                                    value = regClinicAddress,
-                                    onValueChange = { regClinicAddress = it },
-                                    label = { Text("Clinic Address & Landmark") },
-                                    modifier = Modifier.fillMaxWidth().testTag("reg_input_clinic_address"),
-                                    singleLine = true
-                                )
-
-                                OutlinedTextField(
-                                    value = regClinicTimings,
-                                    onValueChange = { regClinicTimings = it },
-                                    label = { Text("Evening Clinic Hours (e.g. 05:30 PM - 08:30 PM)") },
-                                    modifier = Modifier.fillMaxWidth().testTag("reg_input_clinic_timings"),
-                                    singleLine = true
-                                )
-
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            // 1. GENERAL PUBLIC FIELDS
+                            if (selectedAppRole == AppRole.GENERAL_PUBLIC) {
+                                ExposedDropdownMenuBox(
+                                    expanded = expandedBloodDropdown,
+                                    onExpandedChange = { expandedBloodDropdown = !expandedBloodDropdown },
+                                    modifier = Modifier.fillMaxWidth()
                                 ) {
                                     OutlinedTextField(
-                                        value = regClinicFee,
-                                        onValueChange = { regClinicFee = it },
-                                        label = { Text("Fee (₹ INR)") },
-                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                        modifier = Modifier.weight(1f).testTag("reg_input_clinic_fee"),
-                                        singleLine = true
+                                        value = "Blood Group: $regBloodGroup",
+                                        onValueChange = {},
+                                        readOnly = true,
+                                        label = { Text("Emergency Blood Group") },
+                                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedBloodDropdown) },
+                                        modifier = Modifier.fillMaxWidth().menuAnchor().testTag("reg_input_blood_group")
                                     )
-                                    OutlinedTextField(
-                                        value = regClinicPhone,
-                                        onValueChange = { regClinicPhone = it },
-                                        label = { Text("Clinic Phone") },
-                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                                        modifier = Modifier.weight(1f).testTag("reg_input_clinic_phone"),
-                                        singleLine = true
-                                    )
-                                }
-                            }
-                        }
-
-                        // 3. GOVERNMENT OFFICIAL FIELDS
-                        if (selectedAppRole == AppRole.GOVERNMENT_OFFICIAL) {
-                            ExposedDropdownMenuBox(
-                                expanded = expandedDeptDropdown,
-                                onExpandedChange = { expandedDeptDropdown = !expandedDeptDropdown },
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                OutlinedTextField(
-                                    value = regGovtDept,
-                                    onValueChange = {},
-                                    readOnly = true,
-                                    label = { Text("Government Department") },
-                                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedDeptDropdown) },
-                                    modifier = Modifier.fillMaxWidth().menuAnchor().testTag("reg_input_govt_dept")
-                                )
-                                ExposedDropdownMenu(
-                                    expanded = expandedDeptDropdown,
-                                    onDismissRequest = { expandedDeptDropdown = false }
-                                ) {
-                                    govtDepartments.forEach { dept ->
-                                        DropdownMenuItem(
-                                            text = { Text(dept, fontSize = 12.sp) },
-                                            onClick = {
-                                                regGovtDept = dept
-                                                expandedDeptDropdown = false
-                                            }
-                                        )
+                                    ExposedDropdownMenu(
+                                        expanded = expandedBloodDropdown,
+                                        onDismissRequest = { expandedBloodDropdown = false }
+                                    ) {
+                                        bloodGroups.forEach { bg ->
+                                            DropdownMenuItem(
+                                                text = { Text(bg) },
+                                                onClick = {
+                                                    regBloodGroup = bg
+                                                    expandedBloodDropdown = false
+                                                }
+                                            )
+                                        }
                                     }
                                 }
+
+                                OutlinedTextField(
+                                    value = regEmergencyContact,
+                                    onValueChange = { regEmergencyContact = it },
+                                    label = { Text("Emergency Kin / Contact Phone") },
+                                    leadingIcon = { Icon(Icons.Default.Call, contentDescription = "Emergency Kin") },
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                                    modifier = Modifier.fillMaxWidth().testTag("reg_input_emergency_contact"),
+                                    singleLine = true
+                                )
                             }
 
-                            OutlinedTextField(
-                                value = regGovtBadgeId,
-                                onValueChange = { regGovtBadgeId = it },
-                                label = { Text("Official Govt Badge / Employee ID") },
-                                leadingIcon = { Icon(Icons.Default.Shield, contentDescription = "Badge") },
-                                modifier = Modifier.fillMaxWidth().testTag("reg_input_govt_badge"),
-                                singleLine = true
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.height(6.dp))
-
-                        // SUBMIT REGISTRATION BUTTON
-                        Button(
-                            onClick = {
-                                if (regName.isBlank()) {
-                                    Toast.makeText(context, "Please enter your name", Toast.LENGTH_SHORT).show()
-                                    return@Button
+                            // 2. GOVERNMENT OFFICIAL FIELDS
+                            if (selectedAppRole == AppRole.GOVERNMENT_OFFICIAL) {
+                                ExposedDropdownMenuBox(
+                                    expanded = expandedDeptDropdown,
+                                    onExpandedChange = { expandedDeptDropdown = !expandedDeptDropdown },
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    OutlinedTextField(
+                                        value = regGovtDept,
+                                        onValueChange = {},
+                                        readOnly = true,
+                                        label = { Text("Government Department") },
+                                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedDeptDropdown) },
+                                        modifier = Modifier.fillMaxWidth().menuAnchor().testTag("reg_input_govt_dept")
+                                    )
+                                    ExposedDropdownMenu(
+                                        expanded = expandedDeptDropdown,
+                                        onDismissRequest = { expandedDeptDropdown = false }
+                                    ) {
+                                        govtDepartments.forEach { dept ->
+                                            DropdownMenuItem(
+                                                text = { Text(dept, fontSize = 12.sp) },
+                                                onClick = {
+                                                    regGovtDept = dept
+                                                    expandedDeptDropdown = false
+                                                }
+                                            )
+                                        }
+                                    }
                                 }
-                                val userId = "usr_${System.currentTimeMillis()}"
-                                val userEntity = UserEntity(
-                                    userId = userId,
-                                    displayName = if ((selectedAppRole == AppRole.PRIVATE_DOCTOR || selectedAppRole == AppRole.GOVERNMENT_DOCTOR) && !regName.startsWith("Dr.")) "Dr. $regName" else regName,
-                                    email = regEmail,
-                                    role = selectedAppRole.code,
-                                    phone = regPhone.ifBlank { "+91 98000 00000" },
-                                    bloodGroup = regBloodGroup,
-                                    emergencyContact = regEmergencyContact,
-                                    nmcRegNumber = regNmcNumber.ifBlank { "NMC-${System.currentTimeMillis() % 100000}" },
-                                    qualifications = regQualifications,
-                                    specialty = regSpecialty,
-                                    hospitalName = regHospitalName,
-                                    hospitalTimings = regHospitalTimings,
-                                    hasPrivateClinic = regHasClinic,
-                                    clinicName = regClinicName,
-                                    clinicAddress = regClinicAddress,
-                                    clinicTimings = regClinicTimings,
-                                    clinicConsultFee = regClinicFee.toIntOrNull() ?: 500,
-                                    clinicPhone = regClinicPhone,
-                                    govtDepartment = regGovtDept,
-                                    govtBadgeId = regGovtBadgeId
+
+                                OutlinedTextField(
+                                    value = regGovtBadgeId,
+                                    onValueChange = { regGovtBadgeId = it },
+                                    label = { Text("Official Govt Badge / Employee ID") },
+                                    leadingIcon = { Icon(Icons.Default.Shield, contentDescription = "Badge") },
+                                    modifier = Modifier.fillMaxWidth().testTag("reg_input_govt_badge"),
+                                    singleLine = true
                                 )
-                                onRegisterUserWithRole(userEntity)
-                                Toast.makeText(context, "Registered successfully as ${selectedAppRole.title}!", Toast.LENGTH_SHORT).show()
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .testTag("btn_complete_registration"),
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                            shape = RoundedCornerShape(12.dp),
-                            contentPadding = PaddingValues(vertical = 12.dp)
-                        ) {
-                            Icon(imageVector = Icons.Default.CheckCircle, contentDescription = "Register")
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = "Register as ${selectedAppRole.title}",
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold
-                            )
+                            }
+
+                            Spacer(modifier = Modifier.height(6.dp))
+
+                            // SUBMIT REGISTRATION BUTTON FOR CITIZEN / GOVT OFFICIAL
+                            Button(
+                                onClick = {
+                                    if (regName.isBlank()) {
+                                        Toast.makeText(context, "Please enter your name", Toast.LENGTH_SHORT).show()
+                                        return@Button
+                                    }
+                                    val userId = "usr_${System.currentTimeMillis()}"
+                                    val userEntity = UserEntity(
+                                        userId = userId,
+                                        displayName = regName,
+                                        email = regEmail,
+                                        role = selectedAppRole.code,
+                                        phone = regPhone.ifBlank { "+91 98000 00000" },
+                                        bloodGroup = regBloodGroup,
+                                        emergencyContact = regEmergencyContact,
+                                        govtDepartment = regGovtDept,
+                                        govtBadgeId = regGovtBadgeId
+                                    )
+                                    onRegisterUserWithRole(userEntity)
+                                    Toast.makeText(context, "Registered successfully as ${selectedAppRole.title}!", Toast.LENGTH_SHORT).show()
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .testTag("btn_complete_registration"),
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                                shape = RoundedCornerShape(12.dp),
+                                contentPadding = PaddingValues(vertical = 12.dp)
+                            ) {
+                                Icon(imageVector = Icons.Default.CheckCircle, contentDescription = "Register")
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = "Register as ${selectedAppRole.title}",
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
                         }
                     }
                 }

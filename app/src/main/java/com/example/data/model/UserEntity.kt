@@ -39,18 +39,40 @@ data class UserEntity(
     val bloodGroup: String = "",
     val emergencyContact: String = "",
 
-    // Doctor details (NMC Indian registration)
+    // Medical Credentials
+    val medicalCouncil: String = "National Medical Commission (NMC)",
     val nmcRegNumber: String = "",
-    val qualifications: String = "",
-    val specialty: String = "",
+    val registrationYear: Int = 2018,
+    val qualifications: String = "MBBS, MD",
+    val primaryDegree: String = "MBBS",
+    val postGraduateDegrees: String = "",
+    val additionalCertifications: String = "",
+    val experienceYears: Int = 8,
+
+    // Area of Specialization
+    val specialty: String = "Cardiology",
+    val subSpecialties: String = "",
+    val clinicalInterests: String = "",
+    val languagesSpoken: String = "Hindi, English",
+
+    // Current Hospital Affiliation
     val hospitalName: String = "",
+    val hospitalType: String = "Government Apex Hospital",
+    val hospitalDesignation: String = "Consultant Specialist",
+    val hospitalDepartment: String = "Emergency & Critical Care",
     val hospitalTimings: String = "",
+    val hospitalCity: String = "Delhi NCR",
+    val emergencyDutyAvailable: Boolean = true,
+
+    // Current Clinic Affiliation (Dual practice convenience)
     val hasPrivateClinic: Boolean = false,
     val clinicName: String = "",
     val clinicAddress: String = "",
+    val clinicCity: String = "Delhi NCR",
     val clinicTimings: String = "",
     val clinicConsultFee: Int = 0,
     val clinicPhone: String = "",
+    val appointmentBookingAvailable: Boolean = true,
 
     // Government Official details
     val govtDepartment: String = "",

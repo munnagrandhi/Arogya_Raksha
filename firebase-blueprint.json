@@ -2,7 +2,7 @@
   "entities": {
     "UserProfile": {
       "title": "UserProfile",
-      "description": "User profile with role differentiation (general public, private doctor, government doctor, government official)",
+      "description": "User profile with role differentiation, medical credentials, hospital/clinic affiliations, and area of specialization",
       "type": "object",
       "properties": {
         "userId": { "type": "string", "description": "Unique auth UID of the user" },
@@ -16,17 +16,36 @@
         "phone": { "type": "string", "description": "Contact phone number" },
         "bloodGroup": { "type": "string", "description": "Emergency blood group for general public" },
         "emergencyContact": { "type": "string", "description": "Emergency kin phone number" },
-        "nmcRegNumber": { "type": "string", "description": "National Medical Commission / State Council Registration No." },
-        "qualifications": { "type": "string", "description": "Medical degrees (MBBS, MD, MS, DM, MCh, DNB)" },
-        "specialty": { "type": "string", "description": "Primary medical specialty" },
-        "hospitalName": { "type": "string", "description": "Hospital name where doctor is posted" },
+        
+        "medicalCouncil": { "type": "string", "description": "National Medical Commission (NMC) or State Medical Council" },
+        "nmcRegNumber": { "type": "string", "description": "Registration number with NMC / State Medical Council" },
+        "registrationYear": { "type": "integer", "description": "Year of initial medical registration" },
+        "primaryDegree": { "type": "string", "description": "Primary qualification (e.g., MBBS, BDS)" },
+        "postGraduateDegrees": { "type": "string", "description": "Post-graduate degrees (MD, MS, DM, MCh, DNB)" },
+        "additionalCertifications": { "type": "string", "description": "Fellowships, certifications, and accreditations" },
+        "experienceYears": { "type": "integer", "description": "Years of clinical practice experience" },
+        
+        "specialty": { "type": "string", "description": "Primary area of medical specialization" },
+        "subSpecialties": { "type": "string", "description": "Sub-specialties and clinical procedures" },
+        "clinicalInterests": { "type": "string", "description": "Key emergency clinical interests" },
+        "languagesSpoken": { "type": "string", "description": "Languages spoken for patient communication" },
+
+        "hospitalName": { "type": "string", "description": "Hospital name where doctor is currently posted" },
+        "hospitalType": { "type": "string", "description": "Government Apex, District Civil, or Private Multispeciality" },
+        "hospitalDesignation": { "type": "string", "description": "Designation at hospital" },
+        "hospitalDepartment": { "type": "string", "description": "Department or clinical unit at hospital" },
         "hospitalTimings": { "type": "string", "description": "Hospital daytime OPD duty hours" },
+        "hospitalCity": { "type": "string", "description": "City of hospital" },
+
         "hasPrivateClinic": { "type": "boolean", "description": "Whether doctor runs a private clinic" },
         "clinicName": { "type": "string", "description": "Private clinic name" },
-        "clinicAddress": { "type": "string", "description": "Private clinic location" },
-        "clinicTimings": { "type": "string", "description": "Private clinic evening hours" },
-        "clinicConsultFee": { "type": "integer", "description": "Consultation fee in Indian Rupees" },
-        "clinicPhone": { "type": "string", "description": "Clinic telephone number" },
+        "clinicAddress": { "type": "string", "description": "Private clinic physical address" },
+        "clinicCity": { "type": "string", "description": "City or locality of clinic" },
+        "clinicTimings": { "type": "string", "description": "Private clinic evening consultation hours" },
+        "clinicConsultFee": { "type": "integer", "description": "Consultation fee in Indian Rupees (INR)" },
+        "clinicPhone": { "type": "string", "description": "Clinic telephone or appointment booking number" },
+        "appointmentBookingAvailable": { "type": "boolean", "description": "Whether appointments can be scheduled" },
+
         "govtDepartment": { "type": "string", "description": "Official government department (CMO / Traffic Police)" },
         "govtBadgeId": { "type": "string", "description": "Official government employee or badge ID" },
         "createdAt": { "type": "integer", "description": "Creation timestamp epoch milliseconds" },
@@ -38,7 +57,7 @@
   "firestore": {
     "/users/{userId}": {
       "schema": { "$ref": "#/entities/UserProfile" },
-      "description": "Stores user registration and role information for general public, private doctors, govt doctors, and govt officials"
+      "description": "Stores user registration, doctor credentials, affiliations, and specialization details"
     }
   }
 }

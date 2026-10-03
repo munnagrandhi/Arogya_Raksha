@@ -3,6 +3,7 @@ package com.example.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.example.data.model.CompleteDoctorProfile
 import com.example.data.model.DoctorAvailability
 import com.example.data.model.DoctorEntity
 import com.example.data.model.DoctorType
@@ -13,6 +14,8 @@ import com.example.data.model.HospitalEntity
 import com.example.data.model.TrafficAlertEntity
 import com.example.data.model.UserEntity
 import com.example.data.model.UserRole
+import com.example.data.model.toDoctorEntity
+import com.example.data.model.toUserEntity
 import com.example.data.repository.AarogyaRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -179,6 +182,33 @@ class AarogyaViewModel(private val repository: AarogyaRepository) : ViewModel() 
                 currentRole = mappedRole,
                 activeDoctorId = doctorIdToActivate,
                 loggedInUserName = user.displayName,
+                loggedInUserBadge = roleBadge
+            )
+        }
+    }
+
+    fun registerDoctorProfile(profile: CompleteDoctorProfile) {
+        viewModelScope.launch {
+            val userEntity = profile.toUserEntity()
+            repository.saveUser(userEntity)
+            val doctorEntity = profile.toDoctorEntity()
+            val newDoctorId = repository.registerDoctor(doctorEntity)
+
+            val roleBadge = if (profile.role == "GOVERNMENT_DOCTOR") {
+                "Govt Doctor • ${profile.hospitalAffiliation.hospitalName}"
+            } else {
+                if (profile.clinicAffiliation.runsPrivateClinic) {
+                    "Private Doctor • ${profile.clinicAffiliation.clinicName}"
+                } else {
+                    "Private Specialist • ${profile.hospitalAffiliation.hospitalName}"
+                }
+            }
+
+            _uiState.value = _uiState.value.copy(
+                isLoggedIn = true,
+                currentRole = UserRole.DOCTOR,
+                activeDoctorId = newDoctorId,
+                loggedInUserName = profile.fullName,
                 loggedInUserBadge = roleBadge
             )
         }

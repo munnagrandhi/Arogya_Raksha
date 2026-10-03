@@ -82,6 +82,10 @@ fun MainScreen(
                 viewModel.registerUserWithRole(userEntity)
                 selectedTabIndex = 0
             },
+            onRegisterDoctorProfile = { profile ->
+                viewModel.registerDoctorProfile(profile)
+                selectedTabIndex = 0
+            },
             onCitizenQuickLogin = { name, phone, bloodGroup ->
                 viewModel.loginAsCitizen(name, phone, bloodGroup)
                 selectedTabIndex = 0
@@ -262,6 +266,7 @@ fun MainScreen(
                             emergencyIncidents = emergencyIncidents,
                             onSelectDoctor = { viewModel.setActiveDoctorId(it) },
                             onSaveDoctor = { viewModel.registerOrUpdateDoctor(it) },
+                            onSaveDoctorProfile = { viewModel.registerDoctorProfile(it) },
                             onUpdateAvailability = { docId, status ->
                                 viewModel.updateDoctorAvailability(docId, status)
                             }

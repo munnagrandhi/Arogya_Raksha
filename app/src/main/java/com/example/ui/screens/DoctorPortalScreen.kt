@@ -19,7 +19,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Business
@@ -27,31 +26,24 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.CurrencyRupee
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Emergency
 import androidx.compose.material.icons.filled.LocalHospital
 import androidx.compose.material.icons.filled.MedicalServices
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -63,19 +55,23 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.data.model.DoctorAvailability
+import com.example.data.model.ClinicAffiliationData
+import com.example.data.model.CompleteDoctorProfile
+import com.example.data.model.DoctorCredentialsData
 import com.example.data.model.DoctorEntity
-import com.example.data.model.DoctorType
+import com.example.data.model.DoctorSpecializationData
 import com.example.data.model.EmergencyIncidentEntity
+import com.example.data.model.HospitalAffiliationData
+import com.example.data.model.toDoctorEntity
+import com.example.ui.components.DoctorCredentialsInputForm
 import com.example.ui.theme.EmergencyAmber
 import com.example.ui.theme.EmergencyGreen
 import com.example.ui.theme.EmergencyRed
 import com.example.ui.theme.TirangaGreen
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DoctorPortalScreen(
     doctors: List<DoctorEntity>,
@@ -83,6 +79,7 @@ fun DoctorPortalScreen(
     emergencyIncidents: List<EmergencyIncidentEntity>,
     onSelectDoctor: (Long) -> Unit,
     onSaveDoctor: (DoctorEntity) -> Unit,
+    onSaveDoctorProfile: ((CompleteDoctorProfile) -> Unit)? = null,
     onUpdateAvailability: (Long, String) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -92,56 +89,13 @@ fun DoctorPortalScreen(
     var isEditing by remember { mutableStateOf(false) }
     var isRegisteringNew by remember { mutableStateOf(false) }
 
-    // Form fields state
-    var formName by remember(currentDoctor, isRegisteringNew) {
-        mutableStateOf(if (isRegisteringNew) "" else currentDoctor?.name ?: "")
-    }
-    var formQualifications by remember(currentDoctor, isRegisteringNew) {
-        mutableStateOf(if (isRegisteringNew) "" else currentDoctor?.qualifications ?: "")
-    }
-    var formNmcReg by remember(currentDoctor, isRegisteringNew) {
-        mutableStateOf(if (isRegisteringNew) "" else currentDoctor?.nmcRegNumber ?: "")
-    }
-    var formSpecialty by remember(currentDoctor, isRegisteringNew) {
-        mutableStateOf(if (isRegisteringNew) "Cardiologist" else currentDoctor?.specialty ?: "Cardiologist")
-    }
-    var formDoctorType by remember(currentDoctor, isRegisteringNew) {
-        mutableStateOf(if (isRegisteringNew) "DUAL_PRACTICE" else currentDoctor?.doctorType ?: "DUAL_PRACTICE")
-    }
-    var formPhone by remember(currentDoctor, isRegisteringNew) {
-        mutableStateOf(if (isRegisteringNew) "+91 " else currentDoctor?.phone ?: "")
-    }
-    var formHospitalName by remember(currentDoctor, isRegisteringNew) {
-        mutableStateOf(if (isRegisteringNew) "" else currentDoctor?.hospitalName ?: "")
-    }
-    var formHospitalTimings by remember(currentDoctor, isRegisteringNew) {
-        mutableStateOf(if (isRegisteringNew) "Mon - Sat: 08:30 AM - 01:30 PM" else currentDoctor?.hospitalTimings ?: "")
-    }
-    var formHasClinic by remember(currentDoctor, isRegisteringNew) {
-        mutableStateOf(if (isRegisteringNew) true else currentDoctor?.hasPrivateClinic ?: false)
-    }
-    var formClinicName by remember(currentDoctor, isRegisteringNew) {
-        mutableStateOf(if (isRegisteringNew) "" else currentDoctor?.clinicName ?: "")
-    }
-    var formClinicAddress by remember(currentDoctor, isRegisteringNew) {
-        mutableStateOf(if (isRegisteringNew) "" else currentDoctor?.clinicAddress ?: "")
-    }
-    var formClinicTimings by remember(currentDoctor, isRegisteringNew) {
-        mutableStateOf(if (isRegisteringNew) "Mon - Sat: 05:30 PM - 08:30 PM" else currentDoctor?.clinicTimings ?: "")
-    }
-    var formClinicFee by remember(currentDoctor, isRegisteringNew) {
-        mutableStateOf(if (isRegisteringNew) "500" else (currentDoctor?.clinicConsultFee ?: 500).toString())
-    }
-    var formClinicPhone by remember(currentDoctor, isRegisteringNew) {
-        mutableStateOf(if (isRegisteringNew) "+91 " else currentDoctor?.clinicPhone ?: "")
-    }
-
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
-            .testTag("doctor_portal_screen"),
-        contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .background(MaterialTheme.colorScheme.background)
+            .padding(horizontal = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp),
+        contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = 16.dp)
     ) {
         // Portal Header
         item {
@@ -213,14 +167,12 @@ fun DoctorPortalScreen(
                         color = Color(0xFFCBD5E1)
                     )
                     Spacer(modifier = Modifier.height(6.dp))
+
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(Color.White.copy(alpha = 0.1f), RoundedCornerShape(10.dp))
-                            .padding(4.dp),
+                        modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        doctors.take(4).forEach { doc ->
+                        doctors.forEach { doc ->
                             val isSelected = doc.id == currentDoctor?.id && !isRegisteringNew
                             Surface(
                                 shape = RoundedCornerShape(8.dp),
@@ -249,7 +201,7 @@ fun DoctorPortalScreen(
             }
         }
 
-        // Active Emergency On-Duty Status Switcher (For currently logged in doctor)
+        // Active Emergency On-Duty Status Switcher
         if (currentDoctor != null && !isRegisteringNew) {
             item {
                 Card(
@@ -333,225 +285,272 @@ fun DoctorPortalScreen(
             }
         }
 
-        // EDIT / REGISTER PROFILE FORM
+        // ==========================================================
+        // EDIT / REGISTER PROFILE FORM USING DoctorCredentialsInputForm
+        // ==========================================================
         if (isEditing || isRegisteringNew) {
             item {
+                DoctorCredentialsInputForm(
+                    initialProfile = if (isRegisteringNew || currentDoctor == null) null else CompleteDoctorProfile(
+                        userId = "doc_${currentDoctor.id}",
+                        fullName = currentDoctor.name,
+                        email = currentDoctor.email,
+                        phone = currentDoctor.phone,
+                        role = if (currentDoctor.doctorType == "GOVT_DOCTOR") "GOVERNMENT_DOCTOR" else "PRIVATE_DOCTOR",
+                        credentials = DoctorCredentialsData(
+                            medicalCouncil = "National Medical Commission (NMC)",
+                            registrationNumber = currentDoctor.nmcRegNumber,
+                            registrationYear = 2016,
+                            primaryDegree = currentDoctor.qualifications.split(",").firstOrNull()?.trim() ?: "MBBS",
+                            postGraduateDegrees = currentDoctor.qualifications.split(",").drop(1).joinToString(", ").trim(),
+                            additionalCertifications = "Fellowship in Critical Care & Resuscitation",
+                            yearsOfExperience = currentDoctor.experienceYears
+                        ),
+                        hospitalAffiliation = HospitalAffiliationData(
+                            hospitalName = currentDoctor.hospitalName,
+                            hospitalType = if (currentDoctor.doctorType == "GOVT_DOCTOR") "Government Apex Hospital" else "Private Multispeciality Hospital",
+                            designation = currentDoctor.hospitalDesignation,
+                            department = "Department of ${currentDoctor.specialty} & Emergency Services",
+                            opdTimings = currentDoctor.hospitalTimings,
+                            hospitalCity = currentDoctor.hospitalCity,
+                            emergencyDutyAvailable = true
+                        ),
+                        clinicAffiliation = ClinicAffiliationData(
+                            runsPrivateClinic = currentDoctor.hasPrivateClinic,
+                            clinicName = currentDoctor.clinicName,
+                            clinicAddress = currentDoctor.clinicAddress,
+                            clinicCity = currentDoctor.hospitalCity,
+                            eveningHours = currentDoctor.clinicTimings,
+                            consultationFeeInr = currentDoctor.clinicConsultFee,
+                            clinicContactPhone = currentDoctor.clinicPhone,
+                            appointmentBookingAvailable = true
+                        ),
+                        specialization = DoctorSpecializationData(
+                            primarySpecialty = currentDoctor.specialty,
+                            subSpecialties = "Emergency Critical Care & Specialist Consultation",
+                            clinicalInterests = "Acute Golden Hour Care & STEMI/Stroke Triage",
+                            languagesSpoken = "Hindi, English"
+                        )
+                    ),
+                    onSaveProfile = { profile ->
+                        val updatedDoc = profile.toDoctorEntity(if (isRegisteringNew) 0L else (currentDoctor?.id ?: 0L))
+                        onSaveDoctor(updatedDoc)
+                        onSaveDoctorProfile?.invoke(profile)
+                        isEditing = false
+                        isRegisteringNew = false
+                        Toast.makeText(context, "Doctor credentials & affiliations registered in database!", Toast.LENGTH_SHORT).show()
+                    },
+                    onCancel = {
+                        isEditing = false
+                        isRegisteringNew = false
+                    }
+                )
+            }
+        }
+
+        // ==========================================================
+        // REGISTERED PROFILE OVERVIEW (CREDENTIALS, AFFILIATIONS, SPECIALIZATION)
+        // ==========================================================
+        if (!isEditing && !isRegisteringNew && currentDoctor != null) {
+            item {
                 Card(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("doctor_profile_overview_card"),
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
                     Column(
                         modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        Text(
-                            text = if (isRegisteringNew) "Register New Doctor & Clinic" else "Edit Practice Details",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Text(
-                            text = "Mandatory Indian Medical registration & practice details",
-                            fontSize = 11.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-
-                        OutlinedTextField(
-                            value = formName,
-                            onValueChange = { formName = it },
-                            label = { Text("Doctor Full Name (e.g. Dr. Rajesh Verma)") },
-                            modifier = Modifier.fillMaxWidth().testTag("doctor_form_name"),
-                            singleLine = true
-                        )
-
-                        OutlinedTextField(
-                            value = formQualifications,
-                            onValueChange = { formQualifications = it },
-                            label = { Text("Qualifications (e.g. MBBS, MD, DM)") },
-                            modifier = Modifier.fillMaxWidth().testTag("doctor_form_qualifications"),
-                            singleLine = true
-                        )
-
-                        OutlinedTextField(
-                            value = formNmcReg,
-                            onValueChange = { formNmcReg = it },
-                            label = { Text("NMC / State Medical Council Reg No (e.g. NMC-2015-8491)") },
-                            modifier = Modifier.fillMaxWidth().testTag("doctor_form_nmc"),
-                            singleLine = true
-                        )
-
-                        OutlinedTextField(
-                            value = formSpecialty,
-                            onValueChange = { formSpecialty = it },
-                            label = { Text("Specialty (Cardiologist, Neurologist, Trauma Surgeon, etc.)") },
-                            modifier = Modifier.fillMaxWidth().testTag("doctor_form_specialty"),
-                            singleLine = true
-                        )
-
-                        // Doctor Type selector
-                        Text("Practice Category:", fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
-                            listOf(
-                                "DUAL_PRACTICE" to "Dual (Hospital + Clinic)",
-                                "GOVT_DOCTOR" to "Govt Doctor Only",
-                                "PRIVATE_DOCTOR" to "Private Doctor Only"
-                            ).forEach { (typeKey, label) ->
-                                FilterChip(
-                                    selected = formDoctorType == typeKey,
-                                    onClick = {
-                                        formDoctorType = typeKey
-                                        if (typeKey == "DUAL_PRACTICE") formHasClinic = true
-                                        if (typeKey == "GOVT_DOCTOR") formHasClinic = false
-                                    },
-                                    label = { Text(label, fontSize = 10.sp) },
-                                    modifier = Modifier.weight(1f)
-                                )
-                            }
-                        }
-
-                        OutlinedTextField(
-                            value = formPhone,
-                            onValueChange = { formPhone = it },
-                            label = { Text("Emergency Contact Phone") },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                            modifier = Modifier.fillMaxWidth().testTag("doctor_form_phone"),
-                            singleLine = true
-                        )
-
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-
-                        // Hospital Affiliation
-                        Text("🏥 Hospital Details:", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0F3E6D))
-                        OutlinedTextField(
-                            value = formHospitalName,
-                            onValueChange = { formHospitalName = it },
-                            label = { Text("Hospital Name (e.g. District Civil Hospital / AIIMS)") },
-                            modifier = Modifier.fillMaxWidth().testTag("doctor_form_hospital"),
-                            singleLine = true
-                        )
-                        OutlinedTextField(
-                            value = formHospitalTimings,
-                            onValueChange = { formHospitalTimings = it },
-                            label = { Text("Hospital OPD Duty Hours (e.g. Mon-Sat 08:30 AM - 01:30 PM)") },
-                            modifier = Modifier.fillMaxWidth().testTag("doctor_form_hospital_timings"),
-                            singleLine = true
-                        )
-
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-
-                        // Private Clinic Toggle & Details
+                        // Title & Type Tag
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Column {
-                                Text("🩺 Running a Private Clinic?", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color(0xFF92400E))
-                                Text("Provide evening clinic hours for citizen convenience", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            }
-                            Switch(
-                                checked = formHasClinic,
-                                onCheckedChange = { formHasClinic = it },
-                                modifier = Modifier.testTag("doctor_form_clinic_toggle")
-                            )
-                        }
-
-                        if (formHasClinic) {
-                            OutlinedTextField(
-                                value = formClinicName,
-                                onValueChange = { formClinicName = it },
-                                label = { Text("Clinic Name (e.g. Rao Heart Clinic)") },
-                                modifier = Modifier.fillMaxWidth().testTag("doctor_form_clinic_name"),
-                                singleLine = true
-                            )
-                            OutlinedTextField(
-                                value = formClinicAddress,
-                                onValueChange = { formClinicAddress = it },
-                                label = { Text("Clinic Address (e.g. Shop 14, Main Market, Sec-14)") },
-                                modifier = Modifier.fillMaxWidth().testTag("doctor_form_clinic_address"),
-                                singleLine = true
-                            )
-                            OutlinedTextField(
-                                value = formClinicTimings,
-                                onValueChange = { formClinicTimings = it },
-                                label = { Text("Clinic Evening Hours (e.g. Mon-Sat 05:30 PM - 08:30 PM)") },
-                                modifier = Modifier.fillMaxWidth().testTag("doctor_form_clinic_timings"),
-                                singleLine = true
-                            )
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                OutlinedTextField(
-                                    value = formClinicFee,
-                                    onValueChange = { formClinicFee = it },
-                                    label = { Text("Consult Fee (₹ INR)") },
-                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                    modifier = Modifier.weight(1f).testTag("doctor_form_clinic_fee"),
-                                    singleLine = true
-                                )
-                                OutlinedTextField(
-                                    value = formClinicPhone,
-                                    onValueChange = { formClinicPhone = it },
-                                    label = { Text("Clinic Phone") },
-                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                                    modifier = Modifier.weight(1f).testTag("doctor_form_clinic_phone"),
-                                    singleLine = true
-                                )
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(10.dp))
-
-                        // Submit Button
-                        Button(
-                            onClick = {
-                                if (formName.isBlank() || formHospitalName.isBlank()) {
-                                    Toast.makeText(context, "Please fill doctor name and hospital name", Toast.LENGTH_SHORT).show()
-                                    return@Button
+                            Column(modifier = Modifier.weight(1f)) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        text = currentDoctor.name,
+                                        fontSize = 17.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Icon(
+                                        imageVector = Icons.Default.Verified,
+                                        contentDescription = "NMC Verified",
+                                        tint = TirangaGreen,
+                                        modifier = Modifier.size(18.dp)
+                                    )
                                 }
-                                val docId = if (isRegisteringNew) 0L else (currentDoctor?.id ?: 0L)
-                                val updatedDoctor = DoctorEntity(
-                                    id = docId,
-                                    name = formName,
-                                    qualifications = formQualifications.ifBlank { "MBBS" },
-                                    nmcRegNumber = formNmcReg.ifBlank { "NMC-VERIFIED" },
-                                    specialty = formSpecialty,
-                                    doctorType = formDoctorType,
-                                    phone = formPhone,
-                                    experienceYears = currentDoctor?.experienceYears ?: 10,
-                                    hospitalName = formHospitalName,
-                                    hospitalDesignation = currentDoctor?.hospitalDesignation ?: "Consultant Specialist",
-                                    hospitalTimings = formHospitalTimings,
-                                    hasPrivateClinic = formHasClinic,
-                                    clinicName = formClinicName,
-                                    clinicAddress = formClinicAddress,
-                                    clinicTimings = formClinicTimings,
-                                    clinicConsultFee = formClinicFee.toIntOrNull() ?: 500,
-                                    clinicPhone = formClinicPhone,
-                                    availabilityStatus = currentDoctor?.availabilityStatus ?: "AVAILABLE_EMERGENCY",
-                                    isVerifiedByGovt = true,
-                                    rating = currentDoctor?.rating ?: 4.9,
-                                    totalConsults = currentDoctor?.totalConsults ?: 100
+                                Text(
+                                    text = currentDoctor.qualifications,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = MaterialTheme.colorScheme.primary
                                 )
-                                onSaveDoctor(updatedDoctor)
-                                isEditing = false
-                                isRegisteringNew = false
-                                Toast.makeText(context, "Doctor profile saved successfully!", Toast.LENGTH_SHORT).show()
-                            },
+                            }
+
+                            // Role Pill
+                            Surface(
+                                shape = RoundedCornerShape(12.dp),
+                                color = when (currentDoctor.doctorType) {
+                                    "GOVT_DOCTOR" -> TirangaGreen.copy(alpha = 0.12f)
+                                    "DUAL_PRACTICE" -> Color(0xFFD97706).copy(alpha = 0.12f)
+                                    else -> Color(0xFF2563EB).copy(alpha = 0.12f)
+                                }
+                            ) {
+                                Text(
+                                    text = when (currentDoctor.doctorType) {
+                                        "GOVT_DOCTOR" -> "Govt Doctor"
+                                        "DUAL_PRACTICE" -> "Dual Practice"
+                                        else -> "Private Doctor"
+                                    },
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = when (currentDoctor.doctorType) {
+                                        "GOVT_DOCTOR" -> TirangaGreen
+                                        "DUAL_PRACTICE" -> Color(0xFFD97706)
+                                        else -> Color(0xFF2563EB)
+                                    },
+                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                                )
+                            }
+                        }
+
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+
+                        // 1. Medical Credentials & Regulatory Data
+                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Text(
+                                text = "📜 Medical Credentials & Regulatory Data",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Text(
+                                text = "• Registration: ${currentDoctor.nmcRegNumber} (National Medical Commission)",
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Text(
+                                text = "• Clinical Experience: ${currentDoctor.experienceYears} Years",
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+
+                        // 2. Area of Specialization
+                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Text(
+                                text = "🎯 Area of Specialization",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF7C3AED)
+                            )
+                            Text(
+                                text = "• Primary Specialty: ${currentDoctor.specialty}",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                text = "• Clinical Focus: Emergency Acute Care, Golden Hour Resuscitation & Triage",
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+
+                        // 3. Current Hospital Affiliation
+                        Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .testTag("save_doctor_btn"),
+                                .background(Color(0xFFEFF6FF), RoundedCornerShape(10.dp))
+                                .padding(10.dp),
+                            verticalArrangement = Arrangement.spacedBy(3.dp)
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(Icons.Default.LocalHospital, contentDescription = null, tint = Color(0xFF1D4ED8), modifier = Modifier.size(16.dp))
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = "Hospital Posting: ${currentDoctor.hospitalName}",
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF1E3A8A)
+                                )
+                            }
+                            Text(
+                                text = "Designation: ${currentDoctor.hospitalDesignation}",
+                                fontSize = 11.sp,
+                                color = Color(0xFF1E40AF)
+                            )
+                            Text(
+                                text = "Daytime OPD Duty: ${currentDoctor.hospitalTimings}",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = Color(0xFF1E3A8A)
+                            )
+                        }
+
+                        // 4. Current Clinic Affiliation (Dual-Practice)
+                        if (currentDoctor.hasPrivateClinic) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(Color(0xFFFEF3C7), RoundedCornerShape(10.dp))
+                                    .padding(10.dp),
+                                verticalArrangement = Arrangement.spacedBy(3.dp)
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(Icons.Default.Business, contentDescription = null, tint = Color(0xFFB45309), modifier = Modifier.size(16.dp))
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(
+                                        text = "Private Clinic: ${currentDoctor.clinicName}",
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFF78350F)
+                                    )
+                                }
+                                Text(
+                                    text = "Address: ${currentDoctor.clinicAddress}",
+                                    fontSize = 11.sp,
+                                    color = Color(0xFF92400E)
+                                )
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(
+                                        text = "Evening Hours: ${currentDoctor.clinicTimings}",
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = Color(0xFF78350F)
+                                    )
+                                    Text(
+                                        text = "Fee: ₹${currentDoctor.clinicConsultFee}",
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFF92400E)
+                                    )
+                                }
+                            }
+                        }
+
+                        // Edit Button
+                        OutlinedButton(
+                            onClick = { isEditing = true },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag("btn_edit_doctor_credentials"),
                             shape = RoundedCornerShape(10.dp)
                         ) {
-                            Icon(imageVector = Icons.Default.Check, contentDescription = "Save")
+                            Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text(if (isRegisteringNew) "Register Doctor" else "Save Changes", fontWeight = FontWeight.Bold)
+                            Text("Edit Credentials, Affiliations & Specialization", fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
                         }
                     }
                 }
@@ -601,30 +600,50 @@ fun DoctorPortalScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(12.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                            .padding(14.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .size(32.dp)
-                                .clip(CircleShape)
-                                .background(EmergencyRed),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text("108", fontSize = 11.sp, fontWeight = FontWeight.ExtraBold, color = Color.White)
-                        }
-                        Spacer(modifier = Modifier.width(10.dp))
                         Column(modifier = Modifier.weight(1f)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(8.dp)
+                                        .clip(CircleShape)
+                                        .background(EmergencyRed)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = incident.emergencyType,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF7F1D1D)
+                                )
+                            }
                             Text(
-                                text = incident.emergencyType,
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF991B1B)
+                                text = "Requested: ${incident.specialistRecommended}",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.primary
                             )
                             Text(
-                                text = "Target: ${incident.hospitalTargeted} • Specialist: ${incident.specialistRecommended}",
+                                text = "En route to: ${incident.hospitalTargeted}",
                                 fontSize = 11.sp,
-                                color = Color(0xFF7F1D1D)
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = EmergencyRed,
+                            modifier = Modifier.padding(start = 8.dp)
+                        ) {
+                            Text(
+                                text = incident.urgencyLevel,
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                             )
                         }
                     }
